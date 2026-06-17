@@ -12,12 +12,14 @@ int main(void) {
     
     SetConfigFlags(0x00000104);
     InitWindow(windowWidth, windowHeight, "idksterling invasion");
-    
-    SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
+
+    SetupGameAssets();
     
     Vector2 monitorsize = (Vector2){GetMonitorWidth(GetCurrentMonitor()), GetMonitorHeight(GetCurrentMonitor())};
     
-    Font fo1 = LoadFontEx("../asset/font/framd.ttf", monitorsize.y/10, 0, 0);
+    Font fo1 = LoadFontEx("../asset/font/framd.ttf", monitorsize.y/4, 0, 0);
+
+    SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
     
     while (!WindowShouldClose()) {
         // fullscreen
@@ -39,7 +41,7 @@ int main(void) {
                 SetupGameVariables((Vector2){windowWidth, windowHeight});
             }
             camera.offset = (Vector2){windowWidth/2.0, windowHeight/2.0};
-            UpdateGame(&player, market, (Vector2){windowWidth, windowHeight}, deltaTime);
+            UpdateGame(&player, &camera, (Vector2){windowWidth, windowHeight}, deltaTime);
         }
         
         BeginDrawing();
@@ -55,9 +57,17 @@ int main(void) {
         
         EndDrawing();
         
-        if (!ingame) UpdateMenu(&ingame, (Vector2){windowWidth, windowHeight});
+        if (!ingame) {
+            UpdateMenu(&ingame, (Vector2){windowWidth, windowHeight});
+
+            if (ingame) SetupGameVariables((Vector2){windowWidth, windowHeight});
+        }
         
     }
+    ExitGame();
+    UnloadFont(fo1);
+
+    CloseWindow();
     
     return 0;
 }

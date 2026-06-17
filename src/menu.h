@@ -1,5 +1,5 @@
 #include "raylib.h"
-#define TITLE "Peanut Gubbutty"
+#define TITLE "Peanut Butter Power Up"
 #define playbutton_margin 10
 #define playbutton_size 40
 #define playbutton_length 2.5
