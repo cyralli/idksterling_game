@@ -1,5 +1,7 @@
 This is a game i am creating with my friends.
 hi guys
+# Play
+Extract the whole game folder. Then just run the main.exe file inside the src folder and you are good to go!
 
 # Build from source
 1. **Installing raylib**
