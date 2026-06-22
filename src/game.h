@@ -4,8 +4,8 @@
 #include "gamedef.h"
 #include <stdio.h>
 #include <stdlib.h>
-#define GRAVITY 1
-#define FRICTION 1.1
+#define GRAVITY 100
+#define FRICTION 2.6
 
 float gametime = 0;
 
@@ -15,9 +15,9 @@ Player CreatePlayer() {
     player.size = (Vector2){7, 10};
     player.speed = (Vector2){0, 0};
     player.directionx = true; // right 
-    player.maxspeedx = 70;
+    player.maxspeedx = 100;
     player.sprintmul = 1.6;
-    player.movementspeed = 7;
+    player.movementspeed = 350;
     player.jumpspeed = 60;
     player.downspeed = 100;
     player.canjump = false;
@@ -96,7 +96,6 @@ void SetupGameVariables(Vector2 window) {
     player = CreatePlayer();
     camera.target = (Vector2){0, 0};
     camera.rotation = 0.0f;
-    camera.zoom = 10.0f;
 
     peanutbutter.spritesheet = &gameassets[market.spritesheetindex];
     peanutbutter.spriteid = 3;
@@ -138,11 +137,11 @@ void SetupGameVariables(Vector2 window) {
     
         // X axis 
     
-        player->speed.x += acceleratex * player->movementspeed;
+        player->speed.x += acceleratex * player->movementspeed * delta;
         if (abs(player->speed.x) > player->maxspeedx  * (IsKeyDown(KEY_LEFT_SHIFT) ? player->sprintmul : 1)) {
             player->speed.x = (player->speed.x > 0 ? 1 : -1) * player->maxspeedx * (IsKeyDown(KEY_LEFT_SHIFT) ? player->sprintmul : 1);
         }
-        if (acceleratex == 0) player->speed.x /= FRICTION;
+        if (acceleratex == 0) player->speed.x /= FRICTION * delta + 1;
     
         player->position.x += player->speed.x * delta;
     
@@ -169,7 +168,7 @@ void SetupGameVariables(Vector2 window) {
 
         float prevPlayerBottom = player->position.y + player->size.y;
     
-        player->speed.y += GRAVITY; // Gravity
+        player->speed.y += GRAVITY * delta; // Gravity
         player->position.y += player->speed.y * delta;
     
         for (int i = 0; i < length; i++) {
@@ -205,9 +204,12 @@ void SetupGameVariables(Vector2 window) {
     }
     
     void UpdateInteractive(Player *player, World world, float delta) {
-        for (int i = 0; i < sizeof(world.interact) / sizeof(world.interact[0]); i++) {
-            if (world.interact[i].function == NULL) continue; // if we dont have a function then thats obviously not interactable.
-        
+        for (int i = 0; i < sizeof(world.interact) / sizeof(Interactive); i++) {
+            if (world.interact[i].function == NULL) continue; 
+            // if we dont have a function then thats obviously not interactable.
+            if (Vector2Distance((Vector2){world.interact[i].box->x, world.interact[i].box->y}, player->position) > 64) continue; 
+            // if its too far then dont even update. not worth it
+            
             world.interact[i].function(player, *world.interact[i].box, delta);
         }
     }

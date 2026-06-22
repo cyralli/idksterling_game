@@ -4,31 +4,26 @@
 #include "menu.h"
 #include "game.h"
 
-int windowWidth = 500;
-int windowHeight = 500;
-bool fullsc = false;
+int windowWidth = 700;
+int windowHeight = 700;
 
 int main(void) {
     
-    SetConfigFlags(0x00000104);
-    InitWindow(windowWidth, windowHeight, "idksterling invasion");
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(windowWidth, windowHeight, "Peanut Butter Power Up");
 
+    SetExitKey(KEY_NULL);
+
+    InitSettingMenu(); // this loads the setting style
     SetupGameAssets();
     
-    Vector2 monitorsize = (Vector2){GetMonitorWidth(GetCurrentMonitor()), GetMonitorHeight(GetCurrentMonitor())};
+    const Vector2 monitorsize = (Vector2){GetMonitorWidth(GetCurrentMonitor()), GetMonitorHeight(GetCurrentMonitor())};
     
     Font fo1 = LoadFontEx("../asset/font/framd.ttf", monitorsize.y/4, 0, 0);
 
     SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
     
     while (!WindowShouldClose()) {
-        // fullscreen
-        if (IsKeyPressed(KEY_F11)) {
-            ToggleFullscreen();
-            if (IsWindowFullscreen()) {
-                SetWindowSize(monitorsize.x, monitorsize.y);
-            }
-        }
         
         // update window size
         windowWidth = GetScreenWidth();
@@ -41,28 +36,33 @@ int main(void) {
                 SetupGameVariables((Vector2){windowWidth, windowHeight});
             }
             camera.offset = (Vector2){windowWidth/2.0, windowHeight/2.0};
+            float targetHeight = 1080.0f; // The height your game design is optimized for
+            camera.zoom = (float)windowHeight / targetHeight * 10;
             UpdateGame(&player, &camera, (Vector2){windowWidth, windowHeight}, deltaTime);
         }
         
         BeginDrawing();
-        
-            ClearBackground(RAYWHITE);
             
             if (!ingame) {
-                RenderMenu(fo1, (Vector2){windowWidth, windowHeight});
+                if (!insetting) {
+                    RenderMenu(fo1, (Vector2){windowWidth, windowHeight});
+                } else {
+                    RenderSettingMenu(&insetting, (Vector2){windowWidth, windowHeight}, monitorsize);
+                }
             } else {
+                ClearBackground(RAYWHITE);
                 RenderGame(player);
             }
             DrawFPS(0, 0);
         
         EndDrawing();
         
-        if (!ingame) {
+        if (!ingame && !insetting) {
             UpdateMenu(&ingame, (Vector2){windowWidth, windowHeight});
 
             if (ingame) SetupGameVariables((Vector2){windowWidth, windowHeight});
         }
-        
+        if (IsKeyPressed(KEY_ESCAPE)) ingame = false;
     }
     ExitGame();
     UnloadFont(fo1);
